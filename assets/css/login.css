@@ -1,0 +1,58 @@
+body {
+  background-image: url(https://wallpaperaccess.com/full/622548.jpg);
+  background-size: cover;
+}
+.info-panel {
+  box-shadow: 0 3px 15px rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+  margin: auto;
+  margin-top: 100px;
+  background-color: white;
+  padding: 30px;
+}
+
+.info-panel img {
+  width: 564px;
+  height: 352px;
+  margin-right: 20px;
+  margin-bottom: 10px;
+}
+
+.info-panel .gambar {
+  width: 120px;
+  height: 30px;
+  margin-left: 40px;
+  margin-bottom: 50px;
+}
+
+.info-panel h4 {
+  font-weight: 450;
+  font-size: 28px;
+  margin: 20px 100px 0px;
+}
+
+.info-panel p {
+  font-size: 20px;
+  font-weight: 500;
+  margin: -15px 100px 0px;
+}
+
+.info-panel span {
+  font-size: 50px;
+}
+
+.info-login {
+  margin-top: 30px;
+  background-color: white;
+  padding: 0px 80px 0;
+}
+
+.form-control {
+  border: 1;
+  border-bottom: 0px solid #e7e7e7;
+  font-size: 15px;
+  padding: 22px;
+  font-weight: 350;
+  margin-bottom: 10px;
+  margin-top: -20px;
+}
