@@ -11,3 +11,7 @@
 })(jQuery);
 
 $(function () {});
+
+$(function () {
+  $("#datepicker").datepicker();
+});
