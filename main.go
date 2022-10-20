@@ -25,8 +25,12 @@ func main() {
 	http.HandleFunc("/calendar", authcontroller.Calendar)
 	http.HandleFunc("/login", authcontroller.Login)
 	http.HandleFunc("/logout", authcontroller.Logout)
-	http.HandleFunc("/register", authcontroller.Register)
 	http.HandleFunc("/adminlogbook", authcontroller.LogbookAdmin)
+	http.HandleFunc("/active_user", authcontroller.ActiveEmployee)
+	http.HandleFunc("/FindAllUser", authcontroller.ActiveEmployee)
+	http.HandleFunc("/adduser", authcontroller.AddUser)
+	http.HandleFunc("/edituser", authcontroller.EditUser)
+	http.HandleFunc("/deleteuser", authcontroller.DeleteUser)
 
 	fmt.Println("Server jalan di: http://localhost:3000")
 	http.ListenAndServe(":3000", nil)
