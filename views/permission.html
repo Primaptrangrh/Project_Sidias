@@ -88,6 +88,19 @@
           <input type="text" class="form-control" id="exampleFormControlInput1" placeholder="" name="position" />
         </div>
         <div class="mb-3">
+          <div class="">
+            <div class="form-group">
+              Date
+              <div class="input-group input-group-lg date" id="datetimepicker1" data-target-input="nearest">
+                <input type="text" class="form-control datetimepicker-input" data-target="#datetimepicker1" />
+                <div class="input-group-append" data-target="#datetimepicker1" data-toggle="datetimepicker">
+                  <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="mb-3">
           <label for="exampleFormControlTextarea1" class="form-label">Permission Reason</label>
           <textarea class="form-control" id="exampleFormControlTextarea1" rows="3"></textarea>
         </div>
@@ -95,4 +108,25 @@
       </div>
     </div>
   </body>
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.1.2/js/tempusdominus-bootstrap-4.min.js"></script>
+
+  <script>
+    $(function () {
+      $("#datetimepicker1").datetimepicker({
+        useCurrent: false,
+      });
+
+      $("#datetimepicker1").on("change.datetimepicker", function (e) {
+        if (e.oldDate !== e.date) {
+          alert("You picked: " + new Date(e.date).toLocaleDateString("en-US"));
+        }
+      });
+    });
+  </script>
 </html>
