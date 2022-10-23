@@ -21,6 +21,7 @@ type UserInput struct {
 
 var userModel = models.NewUserModel()
 var validation = libraries.NewValidation()
+var permissionModel = models.NewPermissionModel()
 
 func Index(w http.ResponseWriter, r *http.Request) {
 
@@ -48,6 +49,7 @@ func Index(w http.ResponseWriter, r *http.Request) {
 func Dashboard(w http.ResponseWriter, r *http.Request) {
 
 	session, _ := config.Store.Get(r, config.SESSION_ID)
+	fmt.Print(session)
 
 	if len(session.Values) == 0 {
 		http.Redirect(w, r, "/login", http.StatusSeeOther)
@@ -63,6 +65,7 @@ func Dashboard(w http.ResponseWriter, r *http.Request) {
 
 			temp, _ := template.ParseFiles("views/admin_dashboard.html")
 			temp.Execute(w, data)
+			
 		}
 
 	}
@@ -86,6 +89,7 @@ func Permission(w http.ResponseWriter, r *http.Request) {
 
 			temp, _ := template.ParseFiles("views/permission.html")
 			temp.Execute(w, data)
+			fmt.Print(data)
 		}
 
 	}
@@ -171,7 +175,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 				session.Values["role"] = user.Role
 				session.Save(r, w)
 				// http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
-				fmt.Print(session)
+				// fmt.Print(session)
 				if session.Values["role"] != "User" {
 					http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
 					
@@ -328,13 +332,15 @@ func EditUser(response http.ResponseWriter, request *http.Request) {
 			data["user"] = user
 			data["validation"] = vErrors
 		} else {
+			hashPassword, _ := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+			user.Password = string(hashPassword)
 			data["pesan"] = "Data user berhasil diperbarui"
 			userModel.Update(user)
 		}
 
 		temp, _ := template.ParseFiles("views/edit_user.html")
 		temp.Execute(response, data)
-		fmt.Print(user)
+		fmt.Print(data)
 	}
 
 }
@@ -347,4 +353,67 @@ func DeleteUser(response http.ResponseWriter, request *http.Request) {
 	userModel.Delete(id)
 
 	http.Redirect(response, request, "/active_user", http.StatusSeeOther)
+}
+
+func AdminPermission(w http.ResponseWriter, r *http.Request) {
+
+	permission, _ := permissionModel.FindAllPermission()
+
+	data := map[string]interface{}{
+		"permission": permission,
+	}
+
+	temp, err := template.ParseFiles("views/adminpermission.html")
+	if err != nil {
+		panic(err)
+	}
+	temp.Execute(w, data)
+}
+
+func AddPermission(w http.ResponseWriter, r *http.Request) {
+	
+	if r.Method == http.MethodGet {
+
+		temp, _ := template.ParseFiles("views/addpermission.html")
+		temp.Execute(w, nil)
+
+	} else if r.Method == http.MethodPost {
+		// melakukan proses registrasi
+
+		// mengambil inputan form
+		r.ParseForm()
+
+		permission := entities.Permission{
+	
+			NamaLengkap: r.Form.Get("nama_lengkap"),
+			Email:       r.Form.Get("email"),
+			Departemen:    r.Form.Get("departement"),
+			Position:    r.Form.Get("position"),
+			Reason:   r.Form.Get("reason"),
+		}
+
+		errorMessages := validation.Struct(permission)
+
+		if errorMessages != nil {
+
+			data := map[string]interface{}{
+				"validation": errorMessages,
+				"permission":       permission,
+			}
+
+			temp, _ := template.ParseFiles("views/addpermission.html")
+			temp.Execute(w, data)
+		} else {
+
+			// insert ke database
+			permissionModel.CreatePermission(permission)
+
+			data := map[string]interface{}{
+				"pesan": "Data permission berhasil ditambahkan",
+			}
+			temp, _ := template.ParseFiles("views/addpermission.html")
+			temp.Execute(w, data)
+			fmt.Print(data)
+		}
+	}
 }

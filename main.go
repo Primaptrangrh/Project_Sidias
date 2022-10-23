@@ -31,6 +31,9 @@ func main() {
 	http.HandleFunc("/adduser", authcontroller.AddUser)
 	http.HandleFunc("/edituser", authcontroller.EditUser)
 	http.HandleFunc("/deleteuser", authcontroller.DeleteUser)
+	http.HandleFunc("/adminpermission", authcontroller.AdminPermission)
+	http.HandleFunc("/FindAllPermission", authcontroller.AdminPermission)
+	http.HandleFunc("/addpermission", authcontroller.AddPermission)
 
 	fmt.Println("Server jalan di: http://localhost:3000")
 	http.ListenAndServe(":3000", nil)

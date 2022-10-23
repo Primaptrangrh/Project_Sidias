@@ -93,7 +93,7 @@ func (p *UserModel) Find(id int64, user *entities.User) error {
 func (p *UserModel) Update(user entities.User) error {
 
 	_, err := p.db.Exec(
-		"update users set nama_lengkap = ?, email = ?, username = ?, password = ?, role = ?,  where id = ?",
+		"update users set nama_lengkap = ?, email = ?, username = ?, password = ?, role = ? where id = ?",
 		user.NamaLengkap, user.Email, user.Username, user.Password, user.Role, user.Id)
 
 	if err != nil {
@@ -106,4 +106,5 @@ func (p *UserModel) Update(user entities.User) error {
 func (p *UserModel) Delete(id int64) {
 	p.db.Exec("delete from users where id = ?", id)
 }
+
 
