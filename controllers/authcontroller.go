@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
+	"strconv"
 
 	"github.com/jeypc/go-auth/config"
 	"github.com/jeypc/go-auth/entities"
@@ -20,6 +21,7 @@ type UserInput struct {
 
 var userModel = models.NewUserModel()
 var validation = libraries.NewValidation()
+var permissionModel = models.NewPermissionModel()
 
 func Index(w http.ResponseWriter, r *http.Request) {
 
@@ -47,6 +49,7 @@ func Index(w http.ResponseWriter, r *http.Request) {
 func Dashboard(w http.ResponseWriter, r *http.Request) {
 
 	session, _ := config.Store.Get(r, config.SESSION_ID)
+	fmt.Print(session)
 
 	if len(session.Values) == 0 {
 		http.Redirect(w, r, "/login", http.StatusSeeOther)
@@ -62,6 +65,7 @@ func Dashboard(w http.ResponseWriter, r *http.Request) {
 
 			temp, _ := template.ParseFiles("views/admin_dashboard.html")
 			temp.Execute(w, data)
+			
 		}
 
 	}
@@ -85,6 +89,7 @@ func Permission(w http.ResponseWriter, r *http.Request) {
 
 			temp, _ := template.ParseFiles("views/permission.html")
 			temp.Execute(w, data)
+			fmt.Print(data)
 		}
 
 	}
@@ -170,7 +175,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 				session.Values["role"] = user.Role
 				session.Save(r, w)
 				// http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
-				fmt.Print(session)
+				// fmt.Print(session)
 				if session.Values["role"] != "User" {
 					http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
 					
@@ -194,11 +199,51 @@ func Logout(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/login", http.StatusSeeOther)
 }
 
-func Register(w http.ResponseWriter, r *http.Request) {
+
+func LogbookAdmin(w http.ResponseWriter, r *http.Request) {
+
+	session, _ := config.Store.Get(r, config.SESSION_ID)
+
+	if len(session.Values) == 0 {
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+	} else {
+
+		if session.Values["loggedIn"] != true {
+			http.Redirect(w, r, "/login", http.StatusSeeOther)
+		} else {
+
+			data := map[string]interface{}{
+				"nama_lengkap": session.Values["nama_lengkap"],
+			}
+
+			temp, _ := template.ParseFiles("views/admin_logbook.html")
+			temp.Execute(w, data)
+		}
+
+	}
+}
+
+func ActiveEmployee(w http.ResponseWriter, r *http.Request) {
+
+	user, _ := userModel.FindAll()
+
+	data := map[string]interface{}{
+		"user": user,
+	}
+
+	temp, err := template.ParseFiles("views/active_user.html")
+	if err != nil {
+		panic(err)
+	}
+	temp.Execute(w, data)
+}
+
+
+func AddUser(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method == http.MethodGet {
 
-		temp, _ := template.ParseFiles("views/register.html")
+		temp, _ := template.ParseFiles("views/add_user.html")
 		temp.Execute(w, nil)
 
 	} else if r.Method == http.MethodPost {
@@ -225,7 +270,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 				"user":       user,
 			}
 
-			temp, _ := template.ParseFiles("views/register.html")
+			temp, _ := template.ParseFiles("views/add_user.html")
 			temp.Execute(w, data)
 		} else {
 
@@ -239,32 +284,136 @@ func Register(w http.ResponseWriter, r *http.Request) {
 			data := map[string]interface{}{
 				"pesan": "Registrasi berhasil",
 			}
-			temp, _ := template.ParseFiles("views/register.html")
+			temp, _ := template.ParseFiles("views/add_user.html")
 			temp.Execute(w, data)
 		}
 	}
 
 }
 
-func LogbookAdmin(w http.ResponseWriter, r *http.Request) {
+func EditUser(response http.ResponseWriter, request *http.Request) {
 
-	session, _ := config.Store.Get(r, config.SESSION_ID)
+	if request.Method == http.MethodGet {
 
-	if len(session.Values) == 0 {
-		http.Redirect(w, r, "/login", http.StatusSeeOther)
-	} else {
+		queryString := request.URL.Query()
+		id, _ := strconv.ParseInt(queryString.Get("id"), 10, 64)
 
-		if session.Values["loggedIn"] != true {
-			http.Redirect(w, r, "/login", http.StatusSeeOther)
-		} else {
+		var user entities.User
+		userModel.Find(id, &user)
 
-			data := map[string]interface{}{
-				"nama_lengkap": session.Values["nama_lengkap"],
-			}
-
-			temp, _ := template.ParseFiles("views/admin_logbook.html")
-			temp.Execute(w, data)
+		data := map[string]interface{}{
+			"user": user,
 		}
 
+		temp, err := template.ParseFiles("views/edit_user.html")
+		if err != nil {
+			panic(err)
+		}
+		temp.Execute(response, data)
+
+	} else if request.Method == http.MethodPost {
+
+		request.ParseForm()
+
+		var user entities.User
+		user.Id, _ = strconv.ParseInt(request.Form.Get("id"), 10, 64)
+		user.NamaLengkap = request.Form.Get("nama_lengkap")
+		user.Email = request.Form.Get("email")
+		user.Username = request.Form.Get("username")
+		user.Password = request.Form.Get("password")
+		user.Cpassword = request.Form.Get("cpassword")
+		user.Role = request.Form.Get("role")
+
+		var data = make(map[string]interface{})
+
+		vErrors := validation.Struct(user)
+
+		if vErrors != nil {
+			data["user"] = user
+			data["validation"] = vErrors
+		} else {
+			hashPassword, _ := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+			user.Password = string(hashPassword)
+			data["pesan"] = "Data user berhasil diperbarui"
+			userModel.Update(user)
+		}
+
+		temp, _ := template.ParseFiles("views/edit_user.html")
+		temp.Execute(response, data)
+		fmt.Print(data)
+	}
+
+}
+
+func DeleteUser(response http.ResponseWriter, request *http.Request) {
+
+	queryString := request.URL.Query()
+	id, _ := strconv.ParseInt(queryString.Get("id"), 10, 64)
+
+	userModel.Delete(id)
+
+	http.Redirect(response, request, "/active_user", http.StatusSeeOther)
+}
+
+func AdminPermission(w http.ResponseWriter, r *http.Request) {
+
+	permission, _ := permissionModel.FindAllPermission()
+
+	data := map[string]interface{}{
+		"permission": permission,
+	}
+
+	temp, err := template.ParseFiles("views/adminpermission.html")
+	if err != nil {
+		panic(err)
+	}
+	temp.Execute(w, data)
+}
+
+func AddPermission(w http.ResponseWriter, r *http.Request) {
+	
+	if r.Method == http.MethodGet {
+
+		temp, _ := template.ParseFiles("views/addpermission.html")
+		temp.Execute(w, nil)
+
+	} else if r.Method == http.MethodPost {
+		// melakukan proses registrasi
+
+		// mengambil inputan form
+		r.ParseForm()
+
+		permission := entities.Permission{
+	
+			NamaLengkap: r.Form.Get("nama_lengkap"),
+			Email:       r.Form.Get("email"),
+			Departemen:    r.Form.Get("departement"),
+			Position:    r.Form.Get("position"),
+			Reason:   r.Form.Get("reason"),
+		}
+
+		errorMessages := validation.Struct(permission)
+
+		if errorMessages != nil {
+
+			data := map[string]interface{}{
+				"validation": errorMessages,
+				"permission":       permission,
+			}
+
+			temp, _ := template.ParseFiles("views/addpermission.html")
+			temp.Execute(w, data)
+		} else {
+
+			// insert ke database
+			permissionModel.CreatePermission(permission)
+
+			data := map[string]interface{}{
+				"pesan": "Data permission berhasil ditambahkan",
+			}
+			temp, _ := template.ParseFiles("views/addpermission.html")
+			temp.Execute(w, data)
+			fmt.Print(data)
+		}
 	}
 }
