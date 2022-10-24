@@ -75,20 +75,18 @@
       </nav>
 
       <!-- Page Content  -->
-      <div class="container mt-5">
-        <form action="/addpermission" method="post">
-            <h4>Tambah Permission</h4>
-            <p>Silahkan isi formulir permission dibawah ini</p>
-            <hr/>
-            {{ if .pesan }}
-                <div class="alert alert-success">
-                    {{ .pesan }}
-                </div>
-                <hr/>
-            {{ end }}
-
       <div id="content" class="p-4 p-md-5 pt-5">
         <img src="assets/img/sinarmas.png" alt="fefi" width="150" />
+        <form action="/addpermission" method="post">
+          <h4 class="mt-3">Tambah Permission</h4>
+          <p>Silahkan isi formulir permission dibawah ini</p>
+          <hr/>
+          {{ if .pesan }}
+              <div class="alert alert-success">
+                  {{ .pesan }}
+              </div>
+              <hr/>
+          {{ end }}
         <h4 class="mt-3"><b>Permission</b></h4>
 
         <div class="form-group">
@@ -126,10 +124,10 @@
                     {{ .validation.Reason }}
                 </div>
             </div>
+            <button type="submit" class="btn btn-danger button">Submit</button>
             </div>
           </div>
         </div>
-        <button type="submit" class="btn btn-danger button">Submit</button>
       </div>
     </div>
   </body>

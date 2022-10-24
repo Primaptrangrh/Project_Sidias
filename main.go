@@ -26,6 +26,7 @@ func main() {
 	http.HandleFunc("/login", authcontroller.Login)
 	http.HandleFunc("/logout", authcontroller.Logout)
 	http.HandleFunc("/adminlogbook", authcontroller.LogbookAdmin)
+	http.HandleFunc("/admin_home", authcontroller.AdminHome)
 	http.HandleFunc("/active_user", authcontroller.ActiveEmployee)
 	http.HandleFunc("/FindAllUser", authcontroller.ActiveEmployee)
 	http.HandleFunc("/adduser", authcontroller.AddUser)
